@@ -1,0 +1,32 @@
+#pragma once
+#include "sb7.h"
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <exception>
+class Shader
+{
+public:
+	Shader();
+	Shader(const std::string vertexPath, const std::string fragmentPath);
+	Shader(const std::string vertexPath, const std::string tescPath, const std::string tesePath, const std::string fragmentPath);
+
+	void setVertexShder(const std::string vertexPath);
+	void setTescShader(const std::string tescPath);
+	void setTeseShader(const std::string tesePath);
+	void setFragmentShader(const std::string fragmentPath);
+
+
+	void use();
+private:
+	GLuint program;
+
+	std::string shaderString;
+	const char* shaderSource;
+	std::ifstream shaderFile;
+	std::stringstream shaderSStream;
+
+private:
+	void checkCompileErrors(unsigned int ID, std::string type);
+};
