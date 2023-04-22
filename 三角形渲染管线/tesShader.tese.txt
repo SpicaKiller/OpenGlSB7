@@ -1,0 +1,10 @@
+#version 450 core
+//模式选择为三角形，顺时针为正面，
+layout(triangles, equal_spacing, cw) in;
+void main()
+{
+	//细分曲面单元生成的顶点重心坐标,gl_in是曲面细分控制着色器传进来的gl_out
+	gl_Position = (gl_TessCoord.x * gl_in[0].gl_Position + 
+				gl_TessCoord.y * gl_in[1].gl_Position + 
+				gl_TessCoord.z * gl_in[2].gl_Position);
+}
