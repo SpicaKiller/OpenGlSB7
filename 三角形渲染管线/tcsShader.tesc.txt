@@ -1,1 +1,18 @@
+#version 450 core
+//将输出顶点设置为3个
+layout(vertices = 3) out;
+
+void main()
+{
+	if(gl_InvocationID == 0)
+	{
+		//将细分因子写入这两个变量中，后面会详细讲什么意思
+		gl_TessLevelInner[0] = 5.0;
+		gl_TessLevelOuter[0] = 5.0;
+		gl_TessLevelOuter[1] = 5.0;
+		gl_TessLevelOuter[2] = 5.0;
+	}
+	//将输入的数据作为输出数据
+	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+}
 
