@@ -1,0 +1,236 @@
+#include "Shader.h"
+
+Shader::Shader() {}
+
+Shader::Shader(const std::string vertexPath, const std::string fragmentPath)
+{
+	//创建程序对象
+	program = glCreateProgram();
+
+	setVertexShder(vertexPath);
+	setFragmentShader(fragmentPath);
+
+}
+
+Shader::Shader(const std::string vertexPath, const std::string tescPath, const std::string tesePath, const std::string fragmentPath)
+{
+	//创建程序对象
+	program = glCreateProgram();
+
+	setVertexShder(vertexPath);
+	setFragmentShader(fragmentPath);
+	setTescShader(tescPath);
+	setTeseShader(tesePath);
+}
+
+//设置顶点着色器
+void Shader::setVertexShder(const std::string vertexPath)
+{
+	//将上一个shader的源码清理
+	shaderSStream.str("");
+	memset(&shaderSource, '\0', sizeof(shaderSource));
+	//vertex shader
+	if (!vertexPath.empty())	//判断文件路径是否为空
+	{
+		//打开文件
+		shaderFile.open(vertexPath);
+		//检测文件是否有误
+		shaderFile.exceptions(std::ifstream::badbit || std::ifstream::failbit);
+
+		try
+		{
+			if (!shaderFile.is_open())	//判断文件是否打开
+			{
+				throw std::exception("open vertex shader file fail");
+			}
+			//读取源代码到字符串流
+			shaderSStream << shaderFile.rdbuf();
+			//读取完毕，可以关闭文件了
+			shaderFile.close();
+			//将源代码输入到字符串中去
+			shaderString = shaderSStream.str();
+			//由于读取的是const char*类型的，所以用一个string转换一下
+			shaderSource = shaderString.c_str();
+
+			//创建顶点着色器对象
+			GLuint vertexShader;
+			vertexShader = glCreateShader(GL_VERTEX_SHADER);
+			//将shader的源代码传递给shader对象
+			glShaderSource(vertexShader, 1, &shaderSource, NULL);
+			//编译着色器中的源代码
+			glCompileShader(vertexShader);
+			//将shader对象附加到program对象上去
+			glAttachShader(program, vertexShader);
+			//连接program对象上的shader对象
+			glLinkProgram(program);
+			//查错
+			checkCompileErrors(program, "VERTEX");
+			//可以把已经附加并且链接好的shader对象删除了
+			glDeleteShader(vertexShader);
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what() << std::endl;
+		}
+
+	}
+}
+
+//设置曲面细分控制着色器
+void Shader::setTescShader(const std::string tescPath)
+{
+	//将上一个shader的源码清理
+	shaderSStream.str("");
+	memset(&shaderSource, '\0', sizeof(shaderSource));
+	//fragment shader
+	if (!tescPath.empty())	//判断文件路径是否为空
+	{
+		//文件路径不为空，打开文件
+		shaderFile.open(tescPath);
+		shaderFile.exceptions(std::ifstream::badbit || std::ifstream::failbit);
+
+		try
+		{
+			if (!shaderFile.is_open())	//文件打开失败
+			{
+				throw std::exception("open tesc shader file fail");
+			}
+			//文件成功打开
+			//字符串流读取文件中的数据
+			shaderSStream << shaderFile.rdbuf();
+			//读完了，把文件关了
+			shaderFile.close();
+			//把源代码读入字符串中去
+			shaderString = shaderSStream.str();
+			//把string转成系数需要的const char *类型
+			shaderSource = shaderString.c_str();
+			//创建shader对象
+			GLuint tescShader;
+			tescShader = glCreateShader(GL_TESS_CONTROL_SHADER);
+			//将源代码读入shader对象
+			glShaderSource(tescShader, 1, &shaderSource, NULL);
+			//编译shader对象中的源码
+			glCompileShader(tescShader);
+			//将shader对象附加到program对象上去
+			glAttachShader(program, tescShader);
+			//链接program对象上的shader对象
+			glLinkProgram(program);
+			//查错
+			checkCompileErrors(program, "PROGRAM");
+			//完事，可以把shader对象删了
+			glDeleteShader(tescShader);
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what() << std::endl;
+		}
+	}
+}
+
+//设置曲面细分评估着色器
+void Shader::setTeseShader(const std::string tesePath)
+{
+	//将上一个shader的源码清理
+	shaderSStream.str("");
+	memset(&shaderSource, '\0', sizeof(shaderSource));
+	//fragment shader
+	if (!tesePath.empty())	
+	{
+		shaderFile.open(tesePath);
+		shaderFile.exceptions(std::ifstream::badbit || std::ifstream::failbit);
+
+		try
+		{
+			if (!shaderFile.is_open())
+			{
+				throw std::exception("open tese shader file fail");
+			}
+			shaderSStream << shaderFile.rdbuf();
+			shaderFile.close();
+			shaderString = shaderSStream.str();
+			shaderSource = shaderString.c_str();
+
+			GLuint teseShader;
+			teseShader = glCreateShader(GL_TESS_EVALUATION_SHADER);
+			glShaderSource(teseShader, 1, &shaderSource, NULL);
+			glCompileShader(teseShader);
+			glAttachShader(program, teseShader);
+			glLinkProgram(program);
+			checkCompileErrors(program, "PROGRAM");
+			glDeleteShader(teseShader);
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what() << std::endl;
+		}
+	}
+}
+
+//设置片段着色器
+void Shader::setFragmentShader(const std::string fragmentPath)
+{
+	shaderSStream.str("");
+	memset(&shaderSource, '\0', sizeof(shaderSource));
+	//fragment shader
+	if (!fragmentPath.empty())	//判断文件路径是否为空
+	{
+		shaderFile.open(fragmentPath);
+		shaderFile.exceptions(std::ifstream::badbit || std::ifstream::failbit);
+
+		try
+		{
+			if (!shaderFile.is_open())	
+			{
+				throw std::exception("open fragment shader file fail");
+			}
+			shaderSStream << shaderFile.rdbuf();
+			shaderFile.close();
+			shaderString = shaderSStream.str();
+			shaderSource = shaderString.c_str();
+      
+			GLuint fragmentShader;
+			fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+			glShaderSource(fragmentShader, 1, &shaderSource, NULL);
+			glCompileShader(fragmentShader);
+			glAttachShader(program, fragmentShader);
+			glLinkProgram(program);
+			checkCompileErrors(program, "PROGRAM");
+			glDeleteShader(fragmentShader);
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what() << std::endl;
+		}
+	}
+}
+
+void Shader::use()
+{
+	glUseProgram(program);
+}
+
+
+void Shader::checkCompileErrors(unsigned int ID, std::string type)
+{
+	int success;
+	char infoLog[512];
+
+	if (type != "PROGRAM")
+	{
+		glGetShaderiv(ID, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(ID, 512, NULL, infoLog);
+			std::cout << "shader compile error: " << infoLog << std::endl;
+		}
+	}
+	else
+	{
+		glGetProgramiv(ID, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(ID, 512, NULL, infoLog);
+			std::cout << "program linking error: " << infoLog << std::endl;
+		}
+	}
+}
